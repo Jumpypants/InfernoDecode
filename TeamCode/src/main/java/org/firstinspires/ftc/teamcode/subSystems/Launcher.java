@@ -68,7 +68,8 @@ public class Launcher {
 
 
     public class RunOuttakeTask extends Task {
-
+        private final Motor leftWheel;
+        private final Motor rightWheel;
         private final double targetPower;  // power to run outtake at
         private final double rampStep = 0.05;
         private double currentPower = 0.0;
