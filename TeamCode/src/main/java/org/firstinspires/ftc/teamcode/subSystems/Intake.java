@@ -12,10 +12,13 @@ public class Intake {
     private final Motor IntakeMotor;
     private final Gamepad gamepad1;
 
+    private static int buttonClick;
+
     public Intake(HardwareMap hardwareMap, Gamepad gamepad1) {
         IntakeMotor = new Motor(hardwareMap, "IntakeMotor");
         IntakeMotor.setRunMode(Motor.RunMode.RawPower);
         IntakeMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        buttonClick = 0;
 
         this.gamepad1 = gamepad1;
     }
@@ -28,12 +31,20 @@ public class Intake {
 
         @Override
         protected void initialize(RobotContext robotContext) {
+
         }
 
         @Override
         protected boolean run(RobotContext robotContext) {
-            IntakeMotor.set(1);
-            return !gamepad1.a;
+            buttonClick++;
+            if (buttonClick == 1) {
+                IntakeMotor.set(1);
+            } else if (buttonClick == 2) {
+                IntakeMotor.set(0);
+                buttonClick = 0;
+            }
+
+            return true;
         }
     }
 
