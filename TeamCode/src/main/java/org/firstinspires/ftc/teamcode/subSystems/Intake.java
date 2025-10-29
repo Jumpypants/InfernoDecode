@@ -4,19 +4,20 @@ import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.jumpypants.murphy.RobotContext;
 import com.jumpypants.murphy.tasks.Task;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.MyRobot;
 public class Intake {
     private final Motor IntakeMotor;
 
-    private static int buttonClick;
+    private static boolean buttonClick;
 
     public Intake(HardwareMap hardwareMap) {
         IntakeMotor = new Motor(hardwareMap, "IntakeMotor");
         IntakeMotor.setRunMode(Motor.RunMode.RawPower);
         IntakeMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-        buttonClick = 0;
+        buttonClick = false;
 
     }
 
@@ -58,12 +59,14 @@ public class Intake {
 
         @Override
         protected boolean run(RobotContext robotContext) {
-            buttonClick++;
-            if (buttonClick == 1) {
-                IntakeMotor.set(1);
-            } else if (buttonClick == 2) {
-                IntakeMotor.set(0);
-                buttonClick = 0;
+            if (robotContext.gamepad1.x){
+                if (buttonClick == false) {
+                    buttonClick = true;
+                    IntakeMotor.set(1);
+                } else if (buttonClick == true) {
+                    IntakeMotor.set(0);
+                    buttonClick = false;
+                }
             }
 
             return true;
