@@ -22,33 +22,28 @@ public class Intake {
     }
 
     public class AutonIntakeMotor extends Task {
-        private final double TARGET_POSITION; 
-        public AutonIntakeMotor(RobotContext robotContext, double targetPosition) {
+        public AutonIntakeMotor(MyRobot robotContext) {
             super(robotContext);
-            TARGET_POSITION = targetPosition;
+
 
         }
 
         @Override
         protected void initialize(RobotContext robotContext) {
-            IntakeMotor.set(0);
+            IntakeMotor.set(1);
         }
 
         @Override
-        protected boolean run(RobotContext robotContext) {
-            double currentPos = IntakeMotor.getCurrentPosition();
-            if (Math.abs(TARGET_POSITION-currentPos)<10) {
-                IntakeMotor.set(0);
-                return true;
-            }
-            IntakeMotor.set(1);
-            return false;
+        protected boolean run(RobotContext robotContext) { //to be cont.
+            return true;
         }
     }
 
+
+
     public class TeleOpIntake extends Task {
 
-        public TeleOpIntake (RobotContext robotContext, double targetPosition) {
+        public TeleOpIntake (RobotContext robotContext) {
             super(robotContext);
         }
 
