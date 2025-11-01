@@ -6,7 +6,6 @@ import com.jumpypants.murphy.tasks.Task;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
-
 import org.firstinspires.ftc.teamcode.MyRobot;
 
 public class Launcher {
@@ -20,10 +19,7 @@ public class Launcher {
         hoodServo = hardwareMap.get(Servo.class, "hoodServo");
         leftWheel = hardwareMap.get(Motor.class, "leftWheel");
         rightWheel = hardwareMap.get(Motor.class, "rightWheel");
-
     }
-
-
     /**
      * Creates a new Task with the provided RobotContext.
      */
