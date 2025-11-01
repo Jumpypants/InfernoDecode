@@ -6,6 +6,8 @@ import com.jumpypants.murphy.tasks.Task;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.robot.Robot;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.MyRobot;
 public class Intake {
@@ -28,15 +30,19 @@ public class Intake {
 
         }
 
+
         @Override
         protected void initialize(RobotContext robotContext) {
             IntakeMotor.set(1);
+
         }
 
         @Override
         protected boolean run(RobotContext robotContext) { //to be cont.
-            return true;
+            return false;
         }
+
+
     }
 
 
