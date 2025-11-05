@@ -38,39 +38,4 @@ public class IntakingState implements State {
     public String getName() {
         return "Intaking";
     }
-
-    /*
-    private static class GrabTask extends ParallelTask {
-        public GrabTask(MyRobot robotContext) {
-            super(robotContext,
-                    true,
-                    new WaitForTransferInputTask(robotContext)
-            );
-        }
-    }
-
-    private static class WaitForTransferInputTask extends Task {
-        public WaitForTransferInputTask(MyRobot robotContext) {
-            super(robotContext);
-        }
-
-        @Override
-        protected void initialize(RobotContext robotContext) {}
-
-        @Override
-        protected boolean run(RobotContext robotContext) {
-            return !robotContext.gamepad1.a;
-        }
-    }
-
-
-
-    private static class TransferTask extends SequentialTask {
-        public TransferTask(MyRobot robotContext) {
-            super(robotContext
-//                    ,robotContext.WRIST.new MoveWristTask(robotContext, Wrist.WRIST_UP_POSITION)
-            );
-        }
-    }
-    */
 }
