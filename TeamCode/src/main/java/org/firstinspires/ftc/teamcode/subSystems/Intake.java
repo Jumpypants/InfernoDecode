@@ -57,16 +57,14 @@ public class Intake {
 
         @Override
         protected boolean run(RobotContext robotContext) {
+            if (robotContext.gamepad1.x) {
+                IntakeMotor.set(MAXPOWER);
+            } else {
+                IntakeMotor.set(STOPPOWER);
+            }
 
-
-            if (robotContext.gamepad1.x && !lastButtonState) {
-                if (!buttonClick) {
-                    IntakeMotor.set(MAXPOWER);
-                    buttonClick = true;
-                } else {
-                    IntakeMotor.set(STOPPOWER);
-                    buttonClick = false;
-                }
+            if (robotContext.gamepad1.y) { //For when we want to stop intaking and start transfer
+                return false;
             }
 
             return true;
