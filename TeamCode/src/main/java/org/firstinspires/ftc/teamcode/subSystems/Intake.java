@@ -4,36 +4,34 @@ import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.jumpypants.murphy.RobotContext;
 import com.jumpypants.murphy.tasks.Task;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Gamepad;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.robot.Robot;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.MyRobot;
 public class Intake {
     private final Motor IntakeMotor;
+    public final int MAXPOWER = 1, STOPPOWER = 0;
 
-    private static boolean buttonClick;
+
+
 
     public Intake(HardwareMap hardwareMap) {
         IntakeMotor = new Motor(hardwareMap, "IntakeMotor");
         IntakeMotor.setRunMode(Motor.RunMode.RawPower);
         IntakeMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-        buttonClick = false;
 
     }
 
-    public class AutonIntakeMotor extends Task {
-        public AutonIntakeMotor(MyRobot robotContext) {
+    public class SetIntakePower extends Task {
+        private final double POWER;
+
+        public SetIntakePower(MyRobot robotContext, double power) {
             super(robotContext);
-
-
+            this.POWER = power;
         }
 
 
         @Override
         protected void initialize(RobotContext robotContext) {
-            IntakeMotor.set(1);
+            IntakeMotor.set(POWER);
 
         }
 
@@ -47,9 +45,11 @@ public class Intake {
 
 
 
-    public class TeleOpIntake extends Task {
+    public class ManualRunIntakeMotor extends Task {
+        private boolean buttonClick = false;
+        private boolean lastButtonState = false;
 
-        public TeleOpIntake (RobotContext robotContext) {
+        public ManualRunIntakeMotor (RobotContext robotContext) {
             super(robotContext);
         }
 
@@ -60,12 +60,14 @@ public class Intake {
 
         @Override
         protected boolean run(RobotContext robotContext) {
-            if (robotContext.gamepad1.x){
-                if (buttonClick == false) {
+
+
+            if (robotContext.gamepad1.x && !lastButtonState) {
+                if (!buttonClick) {
+                    IntakeMotor.set(MAXPOWER);
                     buttonClick = true;
-                    IntakeMotor.set(1);
-                } else if (buttonClick == true) {
-                    IntakeMotor.set(0);
+                } else {
+                    IntakeMotor.set(STOPPOWER);
                     buttonClick = false;
                 }
             }
