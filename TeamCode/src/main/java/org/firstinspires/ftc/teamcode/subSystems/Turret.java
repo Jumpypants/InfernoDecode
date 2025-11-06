@@ -1,67 +1,75 @@
 package org.firstinspires.ftc.teamcode.subSystems;
+
 import com.jumpypants.murphy.RobotContext;
 import com.jumpypants.murphy.tasks.Task;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
 
 public class Turret {
-    public static final double TURRET_MAX_POS1 = 1;
-    public static final double TURRET_MIN_POS1 = 0;
 
-    public static final double TURRET_MAX_POS = 1;
-    public static final double TURRET_MIN_POS = 0;
+    public static final int TURRET_MAX_POS = 5;
+    public static final int TURRET_MIN_POS = 0;
 
+    private final DcMotorEx turretMotor;
 
-    private final Servo turretServo;
-    private final Servo turretServo2;
+    public Turret(HardwareMap hardwareMap) {
+        this.turretMotor = hardwareMap.get(DcMotorEx.class, "turretMotor");
 
-    //servo1
-    public Turret (HardwareMap hardwareMap) {
-        this.turretServo = hardwareMap.get(Servo.class, "turretServo");
-        this.turretServo2 = hardwareMap.get(Servo.class, "turretServo2");
+        turretMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        turretMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        turretMotor.setDirection(DcMotorSimple.Direction.FORWARD);
 
+        turretMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
-    private double limit(double value, double min, double max) {
+    private int limit(int value, int min, int max) {
         return Math.min(Math.max(value, min), max);
     }
 
-    private void setTurretPos(double pos) {
-        this.turretServo.setPosition(limit(pos,TURRET_MIN_POS,TURRET_MAX_POS));
+    public void setTurretTargetPosition(int targetPosition, double power) {
+        int clippedPos = limit(targetPosition, TURRET_MIN_POS, TURRET_MAX_POS);
+        turretMotor.setTargetPosition(clippedPos);
+        turretMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        turretMotor.setPower(Math.abs(power));
     }
 
-    private void setTurretPos1(double pos) {
-        this.turretServo2.setPosition(limit(pos,TURRET_MIN_POS1,TURRET_MAX_POS1));
+    public int getCurrentPosition() {
+        return turretMotor.getCurrentPosition();
+    }
+
+    public void stopTurret() {
+        turretMotor.setPower(0);
+        turretMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     public class RotateTurretTask extends Task {
-        private final double TARGET_POSITION;
+        private final int TARGET_POSITION;
+        private final double POWER;
         private final double estimatedTimeTaken;
 
-        /**
-         * Creates a new Task with the provided RobotContext.
-         *
-         * @param robotContext contains references like telemetry, gamepads, and subsystems
-         */
-
-        public RotateTurretTask(RobotContext robotContext, double targetPosition) {
+        public RotateTurretTask(RobotContext robotContext, int targetPosition, double power) {
             super(robotContext);
-            TARGET_POSITION = targetPosition;
+            this.TARGET_POSITION = limit(targetPosition, TURRET_MIN_POS, TURRET_MAX_POS);
+            this.POWER = Math.abs(power);
             this.estimatedTimeTaken = 5.0;
         }
 
-
-
         @Override
         protected void initialize(RobotContext robotContext) {
-            turretServo.setPosition(TARGET_POSITION);
-            turretServo2.setPosition(TARGET_POSITION);
+            turretMotor.setTargetPosition(TARGET_POSITION);
+            turretMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            turretMotor.setPower(POWER);
         }
 
         @Override
         protected boolean run(RobotContext robotContext) {
-            return ELAPSED_TIME.seconds() < estimatedTimeTaken;
+            boolean stillRunning = turretMotor.isBusy() && ELAPSED_TIME.seconds() < estimatedTimeTaken;
+            if (!stillRunning) {
+                stopTurret();
+            }
+            return stillRunning;
         }
     }
-
 }
