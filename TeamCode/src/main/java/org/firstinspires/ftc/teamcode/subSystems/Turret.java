@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.subSystems;
 
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
+import com.jumpypants.murphy.RobotContext;
+import com.jumpypants.murphy.tasks.Task;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class Turret {
@@ -16,7 +18,7 @@ public class Turret {
     private static final double MAX_POWER = 1.0;
     private static final double MIN_POWER = -1.0;
 
-    private static final double TICKS_PER_REV = 288.0; //adjust
+    private static final double TICKS_PER_REV = 288.0;
 
     private double targetPosition = 0;
 
@@ -25,16 +27,13 @@ public class Turret {
         turretMotor.setRunMode(Motor.RunMode.RawPower);
         turretMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         turretMotor.resetEncoder();
-
         pid = new PIDController(P, I, D);
     }
 
     public void setPosition(double newTarget) {
         double currentPosition = getCurrentPosition();
         double error = newTarget - currentPosition;
-
         error = (error + TICKS_PER_REV / 2) % TICKS_PER_REV - TICKS_PER_REV / 2;
-
         targetPosition = currentPosition + error;
         pid.setSetPoint(targetPosition);
     }
@@ -52,5 +51,26 @@ public class Turret {
 
     public void stop() {
         turretMotor.set(0);
+    }
+
+    public class RotateTurretTask extends Task {
+        private final double TARGET_POSITION;
+        private final double TOLERANCE = 5.0;
+
+        public RotateTurretTask(RobotContext robotContext, double targetPosition) {
+            super(robotContext);
+            this.TARGET_POSITION = targetPosition;
+        }
+
+        @Override
+        protected void initialize(RobotContext robotContext) {
+            Turret.this.setPosition(TARGET_POSITION);
+        }
+
+        @Override
+        protected boolean run(RobotContext robotContext) {
+            Turret.this.update();
+            return Math.abs(Turret.this.getCurrentPosition() - TARGET_POSITION) > TOLERANCE;
+        }
     }
 }
