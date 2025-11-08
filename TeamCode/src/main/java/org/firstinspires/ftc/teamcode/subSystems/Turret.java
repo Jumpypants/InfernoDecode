@@ -51,7 +51,7 @@ public class Turret {
         pid.setSetPoint(targetPosition);
     }
 
-    public void update() {
+    public void updatePID() {
         double currentPosition = getCurrentPosition();
         double power = pid.calculate(currentPosition);
         power = Math.max(Math.min(power, MAX_POWER), MIN_POWER);
@@ -84,7 +84,7 @@ public class Turret {
 
         @Override
         protected boolean run(RobotContext robotContext) {
-            Turret.this.update();
+            updatePID();
             return Math.abs(Turret.this.getCurrentPosition() - TARGET_POSITION) > TOLERANCE;
         }
     }
