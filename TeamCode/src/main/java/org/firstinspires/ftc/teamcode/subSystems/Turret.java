@@ -1,75 +1,56 @@
 package org.firstinspires.ftc.teamcode.subSystems;
 
-import com.jumpypants.murphy.RobotContext;
-import com.jumpypants.murphy.tasks.Task;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.arcrobotics.ftclib.controller.PIDController;
+import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class Turret {
 
-    public static final int TURRET_MAX_POS = 5;
-    public static final int TURRET_MIN_POS = 0;
+    private final Motor turretMotor;
+    private final PIDController pid;
 
-    private final DcMotorEx turretMotor;
+    private static final double P = 0.001;
+    private static final double I = 0.0001;
+    private static final double D = 0.004;
+
+    private static final double MAX_POWER = 1.0;
+    private static final double MIN_POWER = -1.0;
+
+    private static final double TICKS_PER_REV = 288.0; //adjust
+
+    private double targetPosition = 0;
 
     public Turret(HardwareMap hardwareMap) {
-        this.turretMotor = hardwareMap.get(DcMotorEx.class, "turretMotor");
+        turretMotor = new Motor(hardwareMap, "turretMotor");
+        turretMotor.setRunMode(Motor.RunMode.RawPower);
+        turretMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        turretMotor.resetEncoder();
 
-        turretMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        turretMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        turretMotor.setDirection(DcMotorSimple.Direction.FORWARD);
-
-        turretMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        pid = new PIDController(P, I, D);
     }
 
-    private int limit(int value, int min, int max) {
-        return Math.min(Math.max(value, min), max);
+    public void setPosition(double newTarget) {
+        double currentPosition = getCurrentPosition();
+        double error = newTarget - currentPosition;
+
+        error = (error + TICKS_PER_REV / 2) % TICKS_PER_REV - TICKS_PER_REV / 2;
+
+        targetPosition = currentPosition + error;
+        pid.setSetPoint(targetPosition);
     }
 
-    public void setTurretTargetPosition(int targetPosition, double power) {
-        int clippedPos = limit(targetPosition, TURRET_MIN_POS, TURRET_MAX_POS);
-        turretMotor.setTargetPosition(clippedPos);
-        turretMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        turretMotor.setPower(Math.abs(power));
+    public void update() {
+        double currentPosition = getCurrentPosition();
+        double power = pid.calculate(currentPosition);
+        power = Math.max(Math.min(power, MAX_POWER), MIN_POWER);
+        turretMotor.set(power);
     }
 
-    public int getCurrentPosition() {
+    public double getCurrentPosition() {
         return turretMotor.getCurrentPosition();
     }
 
-    public void stopTurret() {
-        turretMotor.setPower(0);
-        turretMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-    }
-
-    public class RotateTurretTask extends Task {
-        private final int TARGET_POSITION;
-        private final double POWER;
-        private final double estimatedTimeTaken;
-
-        public RotateTurretTask(RobotContext robotContext, int targetPosition, double power) {
-            super(robotContext);
-            this.TARGET_POSITION = limit(targetPosition, TURRET_MIN_POS, TURRET_MAX_POS);
-            this.POWER = Math.abs(power);
-            this.estimatedTimeTaken = 5.0;
-        }
-
-        @Override
-        protected void initialize(RobotContext robotContext) {
-            turretMotor.setTargetPosition(TARGET_POSITION);
-            turretMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            turretMotor.setPower(POWER);
-        }
-
-        @Override
-        protected boolean run(RobotContext robotContext) {
-            boolean stillRunning = turretMotor.isBusy() && ELAPSED_TIME.seconds() < estimatedTimeTaken;
-            if (!stillRunning) {
-                stopTurret();
-            }
-            return stillRunning;
-        }
+    public void stop() {
+        turretMotor.set(0);
     }
 }
