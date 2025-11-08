@@ -30,6 +30,7 @@ public class Turret {
         pid = new PIDController(P, I, D);
     }
 
+    // error is how the turret finds the shortest path and how PID works
     public void setPosition(double newTarget) {
         double currentPosition = getCurrentPosition();
         double error = newTarget - currentPosition;
@@ -55,6 +56,7 @@ public class Turret {
 
     public class RotateTurretTask extends Task {
         private final double TARGET_POSITION;
+        // TOLERANCE is the small acceptable error range in encoder ticks, which tells when the turret is close enough to its target position
         private final double TOLERANCE = 5.0;
 
         public RotateTurretTask(RobotContext robotContext, double targetPosition) {
