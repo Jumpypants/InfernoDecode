@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.MyRobot;
 
 public class Launcher {
     private final Servo hoodServo;
+    private final Servo hoodServo1;
     private final Motor leftWheel;
     private final Motor rightWheel;
 
@@ -17,50 +18,61 @@ public class Launcher {
 
     public Launcher(HardwareMap hardwareMap) {
         hoodServo = hardwareMap.get(Servo.class, "hoodServo");
+        hoodServo1 = hardwareMap.get(Servo.class, "hoodServo1");
         leftWheel = hardwareMap.get(Motor.class, "leftWheel");
         rightWheel = hardwareMap.get(Motor.class, "rightWheel");
+
+        leftWheel.setInverted(true); //change the motor affected based on physical config of the launching mechanism
+
     }
     /**
      * Creates a new Task with the provided RobotContext.
      */
     public class SetHoodPosTask extends Task {
-        public int currentPos;
-        public int maxPos;
-        public int step;
-        public int minPos;
+        private final double minPos = 0.0;  // hood down
+        private final double maxPos = 1.0;  // hood up
+        private final double step = 0.1;    // how much to move each button press
 
+        private double currentPos;
+        private final boolean moveUp, moveDown;
 
-        public SetHoodPosTask(RobotContext robotContext, double targetPos) {
+        public SetHoodPosTask(RobotContext robotContext, boolean moveUp) {
             super(robotContext);
-
+            this.moveUp = moveUp;
+            this.moveDown = !moveUp;
         }
-
+    //while u hold a button, it moves in one direction otherwise it moves in a different direction
+//once up button is pressed, the current pos will move up 0.1 if down button, the current pos will move down
         @Override
         public void initialize(RobotContext robotContext) {
-            hoodServo.setPosition(0);
-            currentPos++;
-            // Move the hood servo to the desired position
+            currentPos = hoodServo.getPosition(); // get current servo position
+
         }
 
         @Override
         protected boolean run(RobotContext robotContext) {
-            // If up button is pressed, increase position gradually
-            if (currentPos < maxPos) {
+
+            if (moveUp) {
                 currentPos += step;
-                if (currentPos > maxPos) currentPos = maxPos;
-                hoodServo.setPosition(currentPos);
-            }
-
-            // If down button is pressed, decrease position gradually
-            if (currentPos > minPos) {
+            } else if (moveDown) {
                 currentPos -= step;
-                if (currentPos < minPos) currentPos = minPos;
-                hoodServo.setPosition(currentPos);
+            }
+            if (currentPos > maxPos) currentPos = maxPos;
+            if (currentPos < minPos) currentPos = minPos;
+
+            if (robotContext.gamepad1.a){
+                return false;
             }
 
-            return false; // keep task running indefinitely
+            // Apply position to both servos immediately
+            hoodServo.setPosition(currentPos);
+            hoodServo1.setPosition(currentPos);
+
+            return true;
         }
     }
+
+
 
 
     public class RunOuttakeTask extends Task {
@@ -79,9 +91,8 @@ public class Launcher {
 
         @Override
         public void initialize(RobotContext robotContext) {
-            leftWheel.set(0);
-            rightWheel.set(0);
-            currentPower = 0.0;
+            leftWheel.set(currentPower);
+            rightWheel.set(currentPower);
         }
 
         @Override
@@ -100,6 +111,7 @@ public class Launcher {
             return false;
         }
     }
+
 
 
 }
