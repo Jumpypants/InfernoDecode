@@ -34,24 +34,24 @@ jobs:
           git remote add upstream https://github.com/Jumpypants/InfernoDecode.git
           git fetch upstream
       
-      - name: Merge upstream into fork (main branch)
+      - name: Merge upstream into fork (master branch)
         # This will create a merge commit. It will halt the workflow on conflicts.
         run: |
-          git checkout main
-          git merge upstream/main --no-edit
+          git checkout master
+          git merge upstream/master --no-edit
       
       - name: Push changes (Conditionally)
         run: |
           # 1. Ensure the remote comparison is fresh
           git fetch origin
 
-          # 2. Compare local 'main' vs remote 'origin/main'.
+          # 2. Compare local 'master' vs remote 'origin/master'.
           # If they are different (exit code 1), a push is needed.
-          if git diff --quiet origin/main main; then
+          if git diff --quiet origin/master master; then
             echo "Fork already up-to-date. No push needed."
           else
             echo "New merge commit found. Pushing..."
             # If the push fails here due to a REAL error (like permissions or network), 
             # the step will correctly fail (red X).
-            git push origin main
+            git push origin master
           fi
