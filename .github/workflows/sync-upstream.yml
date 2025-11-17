@@ -1,0 +1,57 @@
+name: Sync with upstream
+
+on:
+  workflow_dispatch: # Allows manual execution
+  schedule:
+    # Runs every 15 minutes
+    - cron: "*/15 * * * *" 
+
+permissions:
+  contents: write # Required to push changes back to the repository
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          # Fetch all history (required for merge operations)
+          fetch-depth: 0
+          # CRITICAL FIX: The GITHUB_TOKEN is required for pushing later.
+          token: ${{ github.token }}
+      
+      - name: Configure Git Bot User
+        # Important for attribution when the bot creates a commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      
+      - name: Add upstream remote and fetch
+        run: |
+          # 🛑 IMPORTANT: Replace Jumpypants/InfernoDecode with the actual upstream repository URL
+          git remote add upstream https://github.com/Jumpypants/InfernoDecode.git
+          git fetch upstream
+      
+      - name: Merge upstream into fork (main branch)
+        # This will create a merge commit. It will halt the workflow on conflicts.
+        run: |
+          git checkout main
+          git merge upstream/main --no-edit
+      
+      - name: Push changes (Conditionally)
+        run: |
+          # 1. Ensure the remote comparison is fresh
+          git fetch origin
+
+          # 2. Compare local 'main' vs remote 'origin/main'.
+          # If they are different (exit code 1), a push is needed.
+          if git diff --quiet origin/main main; then
+            echo "Fork already up-to-date. No push needed."
+          else
+            echo "New merge commit found. Pushing..."
+            # If the push fails here due to a REAL error (like permissions or network), 
+            # the step will correctly fail (red X).
+            git push origin main
+          fi
