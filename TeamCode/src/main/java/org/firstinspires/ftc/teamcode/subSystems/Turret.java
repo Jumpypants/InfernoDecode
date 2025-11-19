@@ -11,9 +11,9 @@ public class Turret {
     private final Motor turretMotor;
     private final PIDController pid;
 
-    private static final double P = 0.001;
-    private static final double I = 0.0001;
-    private static final double D = 0.004;
+    private static final double P_GAIN = 0.001;
+    private static final double I_GAIN = 0.0001;
+    private static final double D_GAIN = 0.004;
 
     private static final double MAX_POWER = 1.0;
     private static final double MIN_POWER = -1.0;
@@ -27,12 +27,13 @@ public class Turret {
         turretMotor.setRunMode(Motor.RunMode.RawPower);
         turretMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         turretMotor.resetEncoder();
-        pid = new PIDController(P, I, D);
+        pid = new PIDController(P_GAIN, I_GAIN, D_GAIN);
     }
 
     public void setPosition(double newTarget) {
         double currentPosition = getCurrentPosition();
         double error = newTarget - currentPosition;
+
         // error is how the turret finds the shortest path and how PID works
         error = (error + TICKS_PER_REV / 2) % TICKS_PER_REV - TICKS_PER_REV / 2;
 
@@ -67,10 +68,10 @@ public class Turret {
     }
 
     public class RotateTurretTask extends Task {
-        private final double TARGET_POSITION;
-        private final double TOLERANCE = 5.0;
-        // TOLERANCE is the small acceptable error range in encoder ticks, which tells when the turret is close enough to its target position
+        private static final double TOLERANCE = 5.0;
+        // TOLERANCE is the small acceptable error range in encoder ticks
 
+        private final double TARGET_POSITION;
 
         public RotateTurretTask(RobotContext robotContext, double targetPosition) {
             super(robotContext);
