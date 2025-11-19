@@ -3,85 +3,64 @@ package org.firstinspires.ftc.teamcode.subSystems;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.jumpypants.murphy.RobotContext;
 import com.jumpypants.murphy.tasks.Task;
-import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.teamcode.MyRobot;
 
 public class Launcher {
-    private final Servo hoodServo;
-    private final Motor leftWheel;
-    private final Motor rightWheel;
 
-    private static boolean buttonPress;
+    private final Servo HOOD_SERVO;
+    private final Motor LEFT_WHEEL;
+    private final Motor RIGHT_WHEEL;
 
     public Launcher(HardwareMap hardwareMap) {
-        hoodServo = hardwareMap.get(Servo.class, "hoodServo");
-        leftWheel = hardwareMap.get(Motor.class, "leftWheel");
-        rightWheel = hardwareMap.get(Motor.class, "rightWheel");
+        HOOD_SERVO = hardwareMap.get(Servo.class, "hoodServo");
+        LEFT_WHEEL = hardwareMap.get(Motor.class, "leftWheel");
+        RIGHT_WHEEL = hardwareMap.get(Motor.class, "rightWheel");
 
-        leftWheel.setInverted(true); //change the motor affected based on physical config of the launching mechanism
-
+        LEFT_WHEEL.setInverted(true);
     }
-    /**
-     * Creates a new Task with the provided RobotContext.
-     */
-    public class SetHoodPosTask extends Task {
-        private final double desiredPos;     // Target position from user
-        private final double waitTime;       // How long to wait after setting position
 
-        private long startTime;
+    public class SetHoodPosTask extends Task {
+
+        private final double DESIRED_POS;
+        private final double WAIT_TIME;
 
         public SetHoodPosTask(RobotContext robotContext, double desiredPos) {
             super(robotContext);
-            this.desiredPos = Math.max(0.0, Math.min(1.0, desiredPos)); // clamp 0–1
-            waitTime = 0.1 * Math.abs(desiredPos - hoodServo.getPosition());
+            DESIRED_POS = Math.max(0.0, Math.min(1.0, desiredPos));
+            WAIT_TIME = 0.1 * Math.abs(DESIRED_POS - HOOD_SERVO.getPosition());
         }
 
         @Override
         public void initialize(RobotContext robotContext) {
-            // Set immediately
-            hoodServo.setPosition(desiredPos);
+            HOOD_SERVO.setPosition(DESIRED_POS);
         }
 
         @Override
         protected boolean run(RobotContext robotContext) {
-            // After waiting the required time, finish
-            return ELAPSED_TIME.seconds() < waitTime;
+            return ELAPSED_TIME.seconds() < WAIT_TIME;
         }
     }
 
+    public class RunOuttakeTask extends Task {
 
-
-
-
-
-
-
-    public class runOuttakeTask extends Task {
         private final double POWER;
 
-        public runOuttakeTask(MyRobot robotContext, double power) {
+        public RunOuttakeTask(MyRobot robotContext, double power) {
             super(robotContext);
-            this.POWER = power;
+            POWER = power;
         }
-
 
         @Override
         protected void initialize(RobotContext robotContext) {
-            leftWheel.set(POWER);
-            rightWheel.set(POWER);
+            LEFT_WHEEL.set(POWER);
+            RIGHT_WHEEL.set(POWER);
         }
 
         @Override
-        protected boolean run(RobotContext robotContext) { //to be cont.
+        protected boolean run(RobotContext robotContext) {
             return false;
         }
     }
-
-
-
 }
-
-
-
