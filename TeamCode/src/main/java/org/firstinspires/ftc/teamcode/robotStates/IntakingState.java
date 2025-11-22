@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.robotStates;
 import com.jumpypants.murphy.states.State;
 import com.jumpypants.murphy.tasks.SequentialTask;
 import com.jumpypants.murphy.tasks.Task;
-import com.jumpypants.murphy.util.RobotContext;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.MyRobot;
@@ -16,8 +15,7 @@ public class IntakingState implements State {
         this.robotContext = robotContext;
 
         mainTask =  new SequentialTask(robotContext,
-                robotContext.INTAKE.new ManualRunIntakeMotor(robotContext)/*,
-                new TransferTask(robotContext)*/
+                robotContext.INTAKE.new ManualRunIntakeMotor(robotContext)
         );
     }
 
@@ -32,7 +30,7 @@ public class IntakingState implements State {
             return this;
         }
 
-        return new OutakingState(robotContext, getName());
+        return new ShootingState(robotContext, getName());
     }
 
     @Override
