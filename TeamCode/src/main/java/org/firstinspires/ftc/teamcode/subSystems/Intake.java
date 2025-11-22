@@ -10,14 +10,10 @@ public class Intake {
     private final Motor IntakeMotor;
     public final int MAXPOWER = 1, STOPPOWER = 0;
 
-
-
-
     public Intake(HardwareMap hardwareMap) {
         IntakeMotor = new Motor(hardwareMap, "IntakeMotor");
         IntakeMotor.setRunMode(Motor.RunMode.RawPower);
         IntakeMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-
     }
 
     public class SetIntakePower extends Task {
@@ -27,7 +23,6 @@ public class Intake {
             super(robotContext);
             this.POWER = power;
         }
-
 
         @Override
         protected void initialize(RobotContext robotContext) {
@@ -40,13 +35,9 @@ public class Intake {
         }
     }
 
-
-
     public class ManualRunIntakeMotor extends Task {
-        private boolean buttonClick = false;
-        private boolean lastButtonState = false;
 
-        public ManualRunIntakeMotor (RobotContext robotContext) {
+        public ManualRunIntakeMotor (MyRobot robotContext) {
             super(robotContext);
         }
 
@@ -56,18 +47,15 @@ public class Intake {
         }
 
         @Override
-        protected boolean run(RobotContext robotContext) {
+        protected boolean run(RobotContext robotContextWrapper) {
+            MyRobot robotContext = (MyRobot) robotContextWrapper;
             if (robotContext.gamepad1.x) {
                 IntakeMotor.set(MAXPOWER);
             } else {
                 IntakeMotor.set(STOPPOWER);
             }
 
-            if (robotContext.gamepad1.y) { //For when we want to stop intaking and start transfer
-                return false;
-            }
-
-            return true;
+            return !robotContext.gamepad1.y;
         }
     }
 }
